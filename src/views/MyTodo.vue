@@ -173,6 +173,7 @@ export default defineComponent({
       handleSubmit, 
       editTodo, 
       deleteTodo,
+      saveTodos,
       logout
     };
   },
