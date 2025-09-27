@@ -1,4 +1,4 @@
-// api.ts
+// src/stores/api.ts
 export interface Todo {
   id: number;
   todo: string;
@@ -7,57 +7,28 @@ export interface Todo {
 }
 
 export async function fetchTodos(): Promise<Todo[]> {
-  const res = await fetch("https://dummyjson.com/todos");
-  if (!res.ok) {
-    throw new Error("Failed to fetch todos");
+  try {
+    const response = await fetch('https://dummyjson.com/todos');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.todos || [];
+  } catch (error) {
+    console.error('Error fetching todos:', error);
+    return [];
   }
-  const data = await res.json();
-  return data.todos;
 }
 
-export async function addTodo(todoText: string): Promise<Todo> {
-  const res = await fetch("https://dummyjson.com/todos/add", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      todo: todoText,
-      completed: false,
-      userId: 1,
-    }),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to add todo");
+export async function fetchTodoById(id: string): Promise<Todo | null> {
+  try {
+    const response = await fetch(`https://dummyjson.com/todos/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching todo:', error);
+    return null;
   }
-
-  return res.json();
-}
-
-export async function updateTodo(
-  id: number,
-  updatedFields: Partial<Todo>
-): Promise<Todo> {
-  const res = await fetch(`https://dummyjson.com/todos/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(updatedFields),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to update todo");
-  }
-
-  return res.json();
-}
-
-export async function deleteTodo(id: number): Promise<Todo> {
-  const res = await fetch(`https://dummyjson.com/todos/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to delete todo");
-  }
-
-  return res.json();
 }

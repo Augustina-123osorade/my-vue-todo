@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory} from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
@@ -20,7 +20,7 @@ const routes: RouteRecordRaw[] = [
     path: "/todos",
     name: "TodoList",
     component: TodoList,
-    meta: { requiresAuth: true }, // ✅ protected route
+    meta: { requiresAuth: true },
   },
   {
     path: "/mytodo",
@@ -33,7 +33,7 @@ const routes: RouteRecordRaw[] = [
     name: "TodoDetails",
     component: TodoDetails,
     meta: { requiresAuth: true },
-    props: true, // pass route params as props
+    props: true,
   },
   {
     path: "/:pathMatch(.*)*",
@@ -48,21 +48,30 @@ const router = createRouter({
   routes,
 });
 
-// ✅ Navigation Guard (protect routes that need login)
-router.beforeEach((to, _, next) => {
+// Navigation Guard with better error handling
+router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore();
+  
+  // Small delay to ensure auth state is initialized
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
   const isAuthenticated = authStore.isAuthenticated;
+  
+  // Debug logging
+  console.log('Navigation to:', to.path);
+  console.log('Auth status:', isAuthenticated);
+  console.log('User:', authStore.user);
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: "Login" }); // redirect to login
+    console.log('Redirecting to login - not authenticated');
+    next({ name: "Login" });
   } else if (to.name === "Login" && isAuthenticated) {
-    next({ name: "TodoList" }); // redirect logged-in users to TodoList
+    console.log('Redirecting to TodoList - already authenticated');
+    next({ name: "TodoList" });
   } else {
+    console.log('Allowing navigation');
     next();
   }
 });
 
 export default router;
-
-
-
